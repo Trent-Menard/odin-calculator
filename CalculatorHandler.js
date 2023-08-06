@@ -21,19 +21,15 @@ let operator = '';
 function operate(LVal, operator, RVal) {
     switch (operator) {
         case '+':
-            add(LVal,RVal);
-            break;
+            return add(LVal,RVal);
         case '-':
-            subtract(LVal, RVal);
-            break;
+            return subtract(LVal, RVal);
         case '*':
-            multiply(LVal,RVal);
-            break;
+            return multiply(LVal,RVal);
         case '/':
-            divide(LVal,RVal);
-            break;
+            return divide(LVal,RVal);
         default:
-            console.error("Invalid operand supplied.");
+            console.error("Error: Invalid operand supplied. Calculation failed.");
             return -1;
     }
 }
