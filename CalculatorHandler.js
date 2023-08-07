@@ -34,64 +34,109 @@ function operate(LVal, operator, RVal) {
     }
 }
 
-let testPass = operate(1, '+', 1);
-console.log(testPass);
+console.info("Info: running 'operate(1, +, 1)' - this will pass.");
+console.info("Result: " + operate(1, '+', 1));
+console.info("");
+console.info("Info: running 'operate(1, ?, 1)' - this will fail.");
+console.info("Result: " + operate(1, '?', 1));
 
-let testFail = operate(1, '?', 1);
-console.log(testFail);
+let buttonsPressed = [];
 
-function generateCalculatorPanel() {
-    let calculatorPanelDiv = document.createElement("div");
-    calculatorPanelDiv.id = "calculator-panel";
-    calculatorPanelDiv.style.display = "grid";
-    calculatorPanelDiv.style.gridTemplateRows = "repeat(3, 1fr)";
-    calculatorPanelDiv.style.gridTemplateColumns = "repeat(3, 1fr)";
-
-    document.getElementsByTagName("main")[0].append(calculatorPanelDiv);
-
-    calculatorPanelDiv = document.getElementById("calculator-panel");
-
-    // TODO: Fix centering by creating new div for panel before calculatorPanelDiv (which has repeat(3, 1fr); separate them
-
-    // TODO: Center
-    let screenPanelDiv = document.createElement("div");
-    let screenPanelTxt = document.createElement("p");
-    screenPanelTxt.textContent = "012345689";
-    screenPanelTxt.style.textAlign = "center";
-    screenPanelDiv.id = "screen-panel-div";
-    screenPanelDiv.style.width = "auto";
-    screenPanelDiv.style.height = "auto";
-    screenPanelDiv.style.border = "5px solid black";
-    screenPanelDiv.append(screenPanelTxt);
-    calculatorPanelDiv.append(screenPanelDiv);
-
-    for (let i = 1; i < 10; i++) {
-        // let buttonDiv = document.createElement("div");
+function generateNumberButtons(startInc, endInc) {
+    let calculatorButtonsDiv = document.getElementById("calculator-buttons-div");
+    for (let i = startInc; i <= endInc; i++) {
         let button = document.createElement("button");
-        // buttonDiv.id = "button-div-" + i;
         button.id = "button-" + i;
         button.textContent = i.toString();
-        // button.addEventListener("click", () => )
-        calculatorPanelDiv.append(button);
-        // buttonDiv.append(button);
+        calculatorButtonsDiv.append(button);
     }
+}
 
-    // TODO: Center
+function generateSpecialButtons(){
+    let calculatorButtonsDiv = document.getElementById("calculator-buttons-div");
+
     let button = document.createElement("button");
-    button.id = "button-0";
-    button.textContent = "0";
-    calculatorPanelDiv.append(button);
+    button.id = "button-addition";
+    button.textContent = "+";
+    calculatorButtonsDiv.append(button);
 
-    let operators = ["+", "--", "X", "/", "=", "Clear"];
+    button = document.createElement("button");
+    button.id = "button-subtraction";
+    button.textContent = "-";
+    calculatorButtonsDiv.append(button);
 
-    for (let x of operators) {
-        let button = document.createElement("button");
-        x === "--" ? button.id = "button-minus" : button.id = "button-" + x;
-        button.textContent = x;
-        calculatorPanelDiv.append(button);
-    }
+    button = document.createElement("button");
+    button.id = "button-multiplication";
+    button.textContent = "x";
+    calculatorButtonsDiv.append(button);
 
+    button = document.createElement("button");
+    button.id = "button-division";
+    button.textContent = "/";
+    calculatorButtonsDiv.append(button);
 
+    button = document.createElement("button");
+    button.id = "button-equals";
+    button.textContent = "=";
+    calculatorButtonsDiv.append(button);
+
+    button = document.createElement("button");
+    button.id = "button-clear";
+    button.textContent = "Clear";
+    calculatorButtonsDiv.append(button);
+}
+
+function generateCalculatorPanel() {
+
+    let calculatorScreenDiv = document.getElementById("calculator-screen-div");
+    calculatorScreenDiv.style.border = "5px solid black";
+    /*
+        calculatorScreenDiv.display = "flex";
+        calculatorScreenDiv.textAlign = "center";
+        calculatorScreenDiv.alignItems = "center";
+        calculatorScreenDiv.justifyContent = "center";
+    */
+
+    let calculatorButtonsDiv = document.getElementById("calculator-buttons-div");
+    calculatorButtonsDiv.style.display = "grid";
+    calculatorButtonsDiv.style.gridTemplateRows = "repeat(3, 1fr)";
+    calculatorButtonsDiv.style.gridTemplateColumns = "repeat(3, 1fr)";
+
+    generateNumberButtons(7, 9); // 7, 8, 9
+    generateNumberButtons(4, 6); // 4, 5, 6
+    generateNumberButtons(1, 3); // 1, 2, 3
+    generateNumberButtons(0, 0); // 0
+    generateSpecialButtons() // +, -, x, /, =
+    generateButtonEventListeners();
+}
+
+function generateButtonEventListeners(){
+    document.querySelector("#calculator-buttons-div").querySelectorAll("button")
+    .forEach(b =>
+        b.addEventListener("click", (e) =>
+            onButtonPress(e.target)));
 }
 
 generateCalculatorPanel();
+
+let calculatorScreenTxt = document.querySelector("#calculator-screen-div").querySelector("p");
+calculatorScreenTxt.style.textAlign = "center";
+
+function onButtonPress(eventTarget) {
+
+    if (eventTarget.id === "button-clear") {
+        for (let len = buttonsPressed.length; len > 0; len--)
+            buttonsPressed.shift();
+        calculatorScreenTxt.textContent = "";
+    }
+
+    // TODO: Math Input Evaluation
+    else if (eventTarget.id === "button-equals") {
+
+    }
+
+    else {
+        buttonsPressed.push(eventTarget.textContent);
+        calculatorScreenTxt.textContent += eventTarget.textContent;
+    }
+}
