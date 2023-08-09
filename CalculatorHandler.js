@@ -11,7 +11,8 @@ let isEvaluationEventListenerEnabled = true;
 
 const calculatorButtonsDiv = document.querySelector("#calculator-buttons-div");
 const calculatorScreenTxt = document.querySelector("#calculator-screen-div").querySelector("p");
-calculatorScreenTxt.style.textAlign = "center";
+const calculatorScreenDiv = document.querySelector("#calculator-screen-div");
+const calculatorDiv = document.querySelector("#calculator-div");
 
 function add(LVal, RVal)  {
     return LVal + RVal;
@@ -55,56 +56,42 @@ function generateNumberButtons(startInc, endInc) {
     }
 }
 
-function generateSpecialButtons(){
+function generateSpecialButtons(id, className, text) {
     let button = document.createElement("button");
-    button.id = "button-addition";
-    button.classList.add("arithmeticOperator");
-    button.textContent = "+";
-    calculatorButtonsDiv.append(button);
-
-    button = document.createElement("button");
-    button.id = "button-subtraction";
-    button.classList.add("arithmeticOperator");
-    button.textContent = "-";
-    calculatorButtonsDiv.append(button);
-
-    button = document.createElement("button");
-    button.id = "button-multiplication";
-    button.classList.add("arithmeticOperator");
-    button.textContent = "*";
-    calculatorButtonsDiv.append(button);
-
-    button = document.createElement("button");
-    button.id = "button-division";
-    button.classList.add("arithmeticOperator");
-    button.textContent = "/";
-    calculatorButtonsDiv.append(button);
-
-    button = document.createElement("button");
-    button.id = "button-equals";
-    button.textContent = "=";
-    button.classList.add("evaluationOperator");
-    calculatorButtonsDiv.append(button);
-
-    button = document.createElement("button");
-    button.id = "button-clear";
-    button.textContent = "Clear";
+    button.id = id;
+    button.classList.add(className);
+    button.textContent = text;
     calculatorButtonsDiv.append(button);
 }
 
 function generateCalculatorPanel() {
-    let calculatorScreenDiv = document.querySelector("#calculator-screen-div");
+    calculatorDiv.style.border = "5px solid red";
+    calculatorDiv.style.width = "20vw";
+    calculatorDiv.style.height = "20vw";
+
+    calculatorScreenDiv.style.display = "flex";
+    calculatorScreenDiv.style.alignItems = "center";
+    calculatorScreenDiv.style.justifyContent = "center";
     calculatorScreenDiv.style.border = "5px solid black";
 
     calculatorButtonsDiv.style.display = "grid";
-    calculatorButtonsDiv.style.gridTemplateRows = "repeat(3, 1fr)";
-    calculatorButtonsDiv.style.gridTemplateColumns = "repeat(3, 1fr)";
+    calculatorButtonsDiv.style.gridTemplateRows = "repeat(4, 1fr)";
+    calculatorButtonsDiv.style.gridTemplateColumns = "repeat(4, 1fr)";
 
-    generateNumberButtons(7, 9); // 7, 8, 9
-    generateNumberButtons(4, 6); // 4, 5, 6
-    generateNumberButtons(1, 3); // 1, 2, 3
-    generateNumberButtons(0, 0); // 0
-    generateSpecialButtons() // +, -, x, /, =
+    // 7, 8, 9, /
+    generateNumberButtons(7, 9);
+    generateSpecialButtons("button-division","arithmeticOperator", "/");
+
+    generateNumberButtons(4, 6); // 4, 5, 6, *
+    generateSpecialButtons("button-multiplication","arithmeticOperator", "*");
+
+    generateNumberButtons(1, 3); // 1, 2, 3, -
+    generateSpecialButtons("button-subtraction","arithmeticOperator", "-");
+
+    generateNumberButtons(0, 0); // 0, +, =, C
+    generateSpecialButtons("button-equals","evaluationOperator", "=");
+    generateSpecialButtons("button-clear","clear", "C");
+    generateSpecialButtons("button-addition","arithmeticOperator", "+");
 }
 
 function generateButtonEventListeners(){
@@ -124,6 +111,9 @@ function generateButtonEventListeners(){
 
 generateCalculatorPanel();
 generateButtonEventListeners();
+
+// document.querySelector("#calculator-div").style.height = "50vh";
+// document.querySelector("#calculator-div").style.width = "20vw";
 
 function appendTextToPanel(text) {
     calculatorScreenTxt.textContent += text;
@@ -194,3 +184,4 @@ function clearButtonEventListener() {
     const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button");
     arithmeticButtons.forEach(b => b.style.backgroundColor = "");
 }
+
