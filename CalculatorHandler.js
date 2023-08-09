@@ -1,4 +1,18 @@
 
+let operation = {
+    LVal: "",
+    RVal: "",
+    operator: undefined
+}
+
+// let numberButtonsPressed = [];
+let isArithmeticEventListenerEnabled = true;
+let isEvaluationEventListenerEnabled = true;
+
+const calculatorButtonsDiv = document.querySelector("#calculator-buttons-div");
+const calculatorScreenTxt = document.querySelector("#calculator-screen-div").querySelector("p");
+calculatorScreenTxt.style.textAlign = "center";
+
 function add(LVal, RVal)  {
     return LVal + RVal;
 }
@@ -14,9 +28,6 @@ function multiply(LVal, RVal)  {
 function divide (LVal, RVal) {
     return LVal / RVal;
 }
-
-let LVal, RVal = 0;
-let operator = '';
 
 function operate(LVal, operator, RVal) {
     switch (operator) {
@@ -34,50 +45,45 @@ function operate(LVal, operator, RVal) {
     }
 }
 
-console.info("Info: running 'operate(1, +, 1)' - this will pass.");
-console.info("Result: " + operate(1, '+', 1));
-console.info("");
-console.info("Info: running 'operate(1, ?, 1)' - this will fail.");
-console.info("Result: " + operate(1, '?', 1));
-
-let buttonsPressed = [];
-
 function generateNumberButtons(startInc, endInc) {
-    let calculatorButtonsDiv = document.getElementById("calculator-buttons-div");
     for (let i = startInc; i <= endInc; i++) {
         let button = document.createElement("button");
         button.id = "button-" + i;
+        button.classList.add("number");
         button.textContent = i.toString();
         calculatorButtonsDiv.append(button);
     }
 }
 
 function generateSpecialButtons(){
-    let calculatorButtonsDiv = document.getElementById("calculator-buttons-div");
-
     let button = document.createElement("button");
     button.id = "button-addition";
+    button.classList.add("arithmeticOperator");
     button.textContent = "+";
     calculatorButtonsDiv.append(button);
 
     button = document.createElement("button");
     button.id = "button-subtraction";
+    button.classList.add("arithmeticOperator");
     button.textContent = "-";
     calculatorButtonsDiv.append(button);
 
     button = document.createElement("button");
     button.id = "button-multiplication";
-    button.textContent = "x";
+    button.classList.add("arithmeticOperator");
+    button.textContent = "*";
     calculatorButtonsDiv.append(button);
 
     button = document.createElement("button");
     button.id = "button-division";
+    button.classList.add("arithmeticOperator");
     button.textContent = "/";
     calculatorButtonsDiv.append(button);
 
     button = document.createElement("button");
     button.id = "button-equals";
     button.textContent = "=";
+    button.classList.add("evaluationOperator");
     calculatorButtonsDiv.append(button);
 
     button = document.createElement("button");
@@ -87,17 +93,9 @@ function generateSpecialButtons(){
 }
 
 function generateCalculatorPanel() {
-
-    let calculatorScreenDiv = document.getElementById("calculator-screen-div");
+    let calculatorScreenDiv = document.querySelector("#calculator-screen-div");
     calculatorScreenDiv.style.border = "5px solid black";
-    /*
-        calculatorScreenDiv.display = "flex";
-        calculatorScreenDiv.textAlign = "center";
-        calculatorScreenDiv.alignItems = "center";
-        calculatorScreenDiv.justifyContent = "center";
-    */
 
-    let calculatorButtonsDiv = document.getElementById("calculator-buttons-div");
     calculatorButtonsDiv.style.display = "grid";
     calculatorButtonsDiv.style.gridTemplateRows = "repeat(3, 1fr)";
     calculatorButtonsDiv.style.gridTemplateColumns = "repeat(3, 1fr)";
@@ -107,36 +105,92 @@ function generateCalculatorPanel() {
     generateNumberButtons(1, 3); // 1, 2, 3
     generateNumberButtons(0, 0); // 0
     generateSpecialButtons() // +, -, x, /, =
-    generateButtonEventListeners();
 }
 
 function generateButtonEventListeners(){
-    document.querySelector("#calculator-buttons-div").querySelectorAll("button")
+    calculatorButtonsDiv.querySelectorAll("button.number")
     .forEach(b =>
-        b.addEventListener("click", (e) =>
-            onButtonPress(e.target)));
+        b.addEventListener("click", numberPressEventListener));
+
+    // Arithmetic Operators: +, -, *, / EventListener
+    calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator").forEach(b => b.addEventListener("click", arithmeticEventListener))
+
+    // Evaluation Operator: = EventListener
+    calculatorButtonsDiv.querySelector("button#button-equals").addEventListener("click", evaluationEventListener);
+
+    // Clear Button: EventListener
+    calculatorButtonsDiv.querySelector("button#button-clear").addEventListener("click", clearButtonEventListener);
 }
 
 generateCalculatorPanel();
+generateButtonEventListeners();
 
-let calculatorScreenTxt = document.querySelector("#calculator-screen-div").querySelector("p");
-calculatorScreenTxt.style.textAlign = "center";
+function appendTextToPanel(text) {
+    calculatorScreenTxt.textContent += text;
+}
 
-function onButtonPress(eventTarget) {
-
-    if (eventTarget.id === "button-clear") {
-        for (let len = buttonsPressed.length; len > 0; len--)
-            buttonsPressed.shift();
+function numberPressEventListener(event) {
+    // Clear placeholder
+    if (calculatorScreenTxt.textContent === "Calculation results will appear here.")
         calculatorScreenTxt.textContent = "";
-    }
 
-    // TODO: Math Input Evaluation
-    else if (eventTarget.id === "button-equals") {
+    // If no operator supplied, assume is LVal, if supplied, assume is RVal (parsed to Number on evaluation).
+    if (operation.operator === undefined)
+        operation.LVal === "" ? operation.LVal = event.target.textContent : operation.LVal += event.target.textContent;
+    else
+        operation.RVal === "" ? operation.RVal = event.target.textContent : operation.RVal += event.target.textContent;
 
-    }
+    // Prob replace w/ push to operations[]
+    // numberButtonsPressed.push(event.target.textContent);
+    appendTextToPanel(event.target.textContent);
+}
 
-    else {
-        buttonsPressed.push(eventTarget.textContent);
-        calculatorScreenTxt.textContent += eventTarget.textContent;
-    }
+function arithmeticEventListener(event) {
+    if (operation.LVal && !operation.RVal) {
+        if (isArithmeticEventListenerEnabled) {
+            isArithmeticEventListenerEnabled = false;
+            appendTextToPanel(event.target.textContent)
+            const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator");
+            arithmeticButtons.forEach(b => b.style.backgroundColor = "red");
+
+            operation.operator = event.target.textContent;
+        } else
+            alert("Oops!\nSilly, you can only perform one arithmetic operation at a time!");
+    } else
+        alert("Oops!\nCannot perform an arithmetic operation on a single operand!");
+}
+
+function evaluationEventListener() {
+    if (operation.LVal && operation.RVal && operation.operator) {
+        if (isEvaluationEventListenerEnabled) {
+            if (operation.RVal === "0" && operation.operator === "/")
+                alert("Seriously, are you trying to break my calculator?\nYou cannot divide by 0!");
+            else {
+                isEvaluationEventListenerEnabled = false;
+                const evaluationButton = calculatorButtonsDiv.querySelector("button.evaluationOperator");
+                evaluationButton.style.backgroundColor = "red";
+
+                operation.LVal = Number(operation.LVal);
+                operation.RVal = Number(operation.RVal);
+                calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
+            }
+        } else
+            alert("Oops!\nArithmetic operation already in progress!");
+    } else
+        alert("Oops!\nThe supplied calculation cannot be performed; invalid syntax.");
+}
+
+function clearButtonEventListener() {
+    // Reset vars, clear calc screen, & remove button bg colors
+    isArithmeticEventListenerEnabled = true;
+    isEvaluationEventListenerEnabled = true;
+
+    operation.LVal = "";
+    operation.RVal = "";
+    operation.operator = undefined;
+
+    calculatorScreenTxt.textContent = "Calculation results will appear here.";
+
+    const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button");
+    arithmeticButtons.forEach(b => b.style.backgroundColor = "");
 }
