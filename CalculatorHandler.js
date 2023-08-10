@@ -1,8 +1,9 @@
 
 let operation = {
-    LVal: "",
-    RVal: "",
-    operator: undefined
+    LVal: undefined,
+    RVal: undefined,
+    operator: undefined,
+    result: undefined
 }
 
 // let numberButtonsPressed = [];
@@ -65,14 +66,18 @@ function generateSpecialButtons(id, className, text) {
 }
 
 function generateCalculatorPanel() {
-    calculatorDiv.style.border = "5px solid red";
+    calculatorDiv.style.border = "5px inset black";
+    calculatorDiv.style.backgroundColor = "rgb(73, 80, 87)";
+    calculatorDiv.style.padding = "0.3vw";
     calculatorDiv.style.width = "20vw";
     calculatorDiv.style.height = "20vw";
 
     calculatorScreenDiv.style.display = "flex";
     calculatorScreenDiv.style.alignItems = "center";
     calculatorScreenDiv.style.justifyContent = "center";
-    calculatorScreenDiv.style.border = "5px solid black";
+    calculatorScreenDiv.style.border = "5px solid rgb(33, 37, 41)";
+    calculatorScreenDiv.style.backgroundColor = "rgb(173, 181, 189)";
+
 
     calculatorButtonsDiv.style.display = "grid";
     calculatorButtonsDiv.style.gridTemplateRows = "repeat(4, 1fr)";
@@ -112,6 +117,15 @@ function generateButtonEventListeners(){
 generateCalculatorPanel();
 generateButtonEventListeners();
 
+const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator");
+arithmeticButtons.forEach(b => b.style.backgroundColor = "rgb(52, 58, 64)");
+
+const clearButton = calculatorButtonsDiv.querySelector("button.clear");
+clearButton.style.backgroundColor = "rgb(52, 58, 64)";
+
+const equalsButton = calculatorButtonsDiv.querySelector("button.evaluationOperator");
+equalsButton.style.backgroundColor = "rgb(52, 58, 64)";
+
 // document.querySelector("#calculator-div").style.height = "50vh";
 // document.querySelector("#calculator-div").style.width = "20vw";
 
@@ -124,32 +138,36 @@ function numberPressEventListener(event) {
     if (calculatorScreenTxt.textContent === "Calculation results will appear here.")
         calculatorScreenTxt.textContent = "";
 
-    // If no operator supplied, assume is LVal, if supplied, assume is RVal (parsed to Number on evaluation).
+    // If no operator supplied, assume is LVal, if supplied, assume is RVal then concat as string & parse to Number.
     if (operation.operator === undefined)
-        operation.LVal === "" ? operation.LVal = event.target.textContent : operation.LVal += event.target.textContent;
+        operation.LVal === undefined ? operation.LVal = Number(event.target.textContent) : operation.LVal = Number(String(operation.LVal + event.target.textContent));
     else
-        operation.RVal === "" ? operation.RVal = event.target.textContent : operation.RVal += event.target.textContent;
+        operation.RVal === undefined ? operation.RVal = Number(event.target.textContent) : operation.RVal = Number(String(operation.RVal + event.target.textContent));
 
-    // Prob replace w/ push to operations[]
-    // numberButtonsPressed.push(event.target.textContent);
     appendTextToPanel(event.target.textContent);
 }
 
 function arithmeticEventListener(event) {
-    if (operation.LVal && !operation.RVal) {
-        if (isArithmeticEventListenerEnabled) {
-            isArithmeticEventListenerEnabled = false;
-            appendTextToPanel(event.target.textContent)
-            const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator");
-            arithmeticButtons.forEach(b => b.style.backgroundColor = "red");
 
-            operation.operator = event.target.textContent;
-        } else
-            alert("Oops!\nSilly, you can only perform one arithmetic operation at a time!");
-    } else
-        alert("Oops!\nCannot perform an arithmetic operation on a single operand!");
+    if (operation.LVal === undefined) {
+        alert("Hmm, that won't work.\nYou can't perform an arithmetic operation on a single operand!");
+        return; // Don't append to screen.
+    }
+
+    if (operation.operator === undefined) {
+        appendTextToPanel(event.target.textContent);
+        operation.operator = event.target.textContent;
+    }
+
+    if (operation.LVal !== undefined && operation.RVal !== undefined && operation.operator !== undefined){
+        calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
+        operation.result = Number(calculatorScreenTxt.textContent);
+        // operation.LVal = undefined;
+        // operation.RVal = undefined;
+    }
 }
 
+// TODO: Update
 function evaluationEventListener() {
     if (operation.LVal && operation.RVal && operation.operator) {
         if (isEvaluationEventListenerEnabled) {
@@ -157,12 +175,8 @@ function evaluationEventListener() {
                 alert("Seriously, are you trying to break my calculator?\nYou cannot divide by 0!");
             else {
                 isEvaluationEventListenerEnabled = false;
-                const evaluationButton = calculatorButtonsDiv.querySelector("button.evaluationOperator");
-                evaluationButton.style.backgroundColor = "red";
-
-                operation.LVal = Number(operation.LVal);
-                operation.RVal = Number(operation.RVal);
                 calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
+                operation.result = Number(calculatorScreenTxt.textContent);
             }
         } else
             alert("Oops!\nArithmetic operation already in progress!");
@@ -171,17 +185,14 @@ function evaluationEventListener() {
 }
 
 function clearButtonEventListener() {
-    // Reset vars, clear calc screen, & remove button bg colors
+    // Reset vars, clear calc screen
     isArithmeticEventListenerEnabled = true;
     isEvaluationEventListenerEnabled = true;
 
-    operation.LVal = "";
-    operation.RVal = "";
+    operation.LVal = undefined;
+    operation.RVal = undefined;
+    operation.result = undefined;
     operation.operator = undefined;
 
     calculatorScreenTxt.textContent = "Calculation results will appear here.";
-
-    const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button");
-    arithmeticButtons.forEach(b => b.style.backgroundColor = "");
 }
-

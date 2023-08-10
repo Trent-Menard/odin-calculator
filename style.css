@@ -1,5 +1,6 @@
 
 main {
+    /*margin: 20vh;*/
     display: flex;
     align-items: center;
     justify-content: center;
@@ -8,6 +9,7 @@ main {
 button {
     padding: 1vw;
     margin: 0.5vw;
+    border: 1px inset black;
     font-family: Roboto, serif;
     font-size: 16px;
     font-weight: bold;
