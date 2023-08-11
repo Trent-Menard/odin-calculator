@@ -5,6 +5,8 @@ let operation = {
     operator: undefined,
     result: undefined
 }
+let isLValDecimalEnabled = true;
+let isRValDecimalEnabled = false;
 
 const calculatorButtonsDiv = document.querySelector("#calculator-buttons-div");
 const calculatorScreenTxt = document.querySelector("#calculator-screen-div").querySelector("p");
@@ -66,7 +68,8 @@ function generateCalculatorPanel() {
     calculatorDiv.style.backgroundColor = "rgb(73, 80, 87)";
     calculatorDiv.style.padding = "0.3vw";
     calculatorDiv.style.width = "20vw";
-    calculatorDiv.style.height = "20vw";
+    calculatorDiv.style.minWidth = "382px";
+    calculatorDiv.style.minHeight = "382px";
 
     calculatorScreenDiv.style.display = "flex";
     calculatorScreenDiv.style.alignItems = "center";
@@ -74,9 +77,8 @@ function generateCalculatorPanel() {
     calculatorScreenDiv.style.border = "5px solid rgb(33, 37, 41)";
     calculatorScreenDiv.style.backgroundColor = "rgb(173, 181, 189)";
 
-
     calculatorButtonsDiv.style.display = "grid";
-    calculatorButtonsDiv.style.gridTemplateRows = "repeat(4, 1fr)";
+    calculatorButtonsDiv.style.gridTemplateRows = "repeat(5, 1fr)";
     calculatorButtonsDiv.style.gridTemplateColumns = "repeat(4, 1fr)";
 
     // 7, 8, 9, /
@@ -93,6 +95,9 @@ function generateCalculatorPanel() {
     generateSpecialButtons("button-equals","evaluationOperator", "=");
     generateSpecialButtons("button-clear","clear", "C");
     generateSpecialButtons("button-addition","arithmeticOperator", "+");
+
+    // .
+    generateSpecialButtons("button-decimal","numberModifier", ".");
 
     const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator");
     arithmeticButtons.forEach(b => b.style.backgroundColor = "rgb(52, 58, 64)");
@@ -117,6 +122,9 @@ function generateButtonEventListeners(){
 
     // Clear Button: EventListener
     calculatorButtonsDiv.querySelector("button#button-clear").addEventListener("click", clearButtonEventListener);
+
+    // Decimal Button: EventListener
+    calculatorButtonsDiv.querySelector("button#button-decimal").addEventListener("click", decimalButtonEventListener);
 }
 
 generateCalculatorPanel();
@@ -134,11 +142,11 @@ function numberPressEventListener(event) {
     if (calculatorScreenTxt.textContent === "Calculation results will appear here.")
         calculatorScreenTxt.textContent = "";
 
-    // If no operator supplied, assume is LVal, if supplied, assume is RVal then concat as string & parse to Number.
-    if (operation.operator === undefined)
-        operation.LVal === undefined ? operation.LVal = Number(event.target.textContent) : operation.LVal = Number(String(operation.LVal + event.target.textContent));
-    else
-        operation.RVal === undefined ? operation.RVal = Number(event.target.textContent) : operation.RVal = Number(String(operation.RVal + event.target.textContent));
+        // If no operator supplied, assume is LVal, if supplied, assume is RVal then concat as string & parse to Number.
+        if (operation.operator === undefined)
+            operation.LVal === undefined ? operation.LVal = Number(event.target.textContent) : operation.LVal = Number(String(operation.LVal + event.target.textContent));
+        else
+            operation.RVal === undefined ? operation.RVal = Number(event.target.textContent) : operation.RVal = Number(String(operation.RVal + event.target.textContent));
 
     appendTextToPanel(event.target.textContent);
 }
@@ -148,6 +156,13 @@ function arithmeticEventListener(event) {
         alert("Hmm, that won't work.\nYou can't perform an arithmetic operation on a single operand!");
         return; // Don't append to screen.
     }
+
+    // Used max of 1 decimal for LVal
+    if (!isLValDecimalEnabled)
+        isRValDecimalEnabled = true;
+    // LVal & RVal both used max; reset.
+    else if (!isLValDecimalEnabled && !isRValDecimalEnabled)
+        isLValDecimalEnabled = true;
 
     if (operation.operator === undefined) {
         appendTextToPanel(event.target.textContent);
@@ -195,4 +210,21 @@ function clearButtonEventListener() {
     operation.result = undefined;
     operation.operator = undefined;
     calculatorScreenTxt.textContent = "Calculation results will appear here.";
+}
+
+function decimalButtonEventListener() {
+    // Inherit 0 if undefined. E.g.: .25 -> 0.25 & append decimal if needed.
+    if (isLValDecimalEnabled) {
+        operation.LVal === undefined ? operation.LVal = 0 : operation.LVal = operation.LVal + ".";
+        appendTextToPanel(".");
+        isLValDecimalEnabled = false;
+    }
+
+    if (isRValDecimalEnabled) {
+        if (operation.LVal) {
+            operation.RVal === undefined ? operation.RVal = 0 : operation.RVal = operation.RVal + ".";
+            appendTextToPanel(".");
+            isRValDecimalEnabled = false;
+        }
+    }
 }
