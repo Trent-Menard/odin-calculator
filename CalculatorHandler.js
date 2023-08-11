@@ -6,10 +6,6 @@ let operation = {
     result: undefined
 }
 
-// let numberButtonsPressed = [];
-let isArithmeticEventListenerEnabled = true;
-let isEvaluationEventListenerEnabled = true;
-
 const calculatorButtonsDiv = document.querySelector("#calculator-buttons-div");
 const calculatorScreenTxt = document.querySelector("#calculator-screen-div").querySelector("p");
 const calculatorScreenDiv = document.querySelector("#calculator-screen-div");
@@ -97,6 +93,15 @@ function generateCalculatorPanel() {
     generateSpecialButtons("button-equals","evaluationOperator", "=");
     generateSpecialButtons("button-clear","clear", "C");
     generateSpecialButtons("button-addition","arithmeticOperator", "+");
+
+    const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator");
+    arithmeticButtons.forEach(b => b.style.backgroundColor = "rgb(52, 58, 64)");
+
+    const clearButton = calculatorButtonsDiv.querySelector("button.clear");
+    clearButton.style.backgroundColor = "rgb(52, 58, 64)";
+
+    const equalsButton = calculatorButtonsDiv.querySelector("button.evaluationOperator");
+    equalsButton.style.backgroundColor = "rgb(52, 58, 64)";
 }
 
 function generateButtonEventListeners(){
@@ -116,15 +121,6 @@ function generateButtonEventListeners(){
 
 generateCalculatorPanel();
 generateButtonEventListeners();
-
-const arithmeticButtons = calculatorButtonsDiv.querySelectorAll("button.arithmeticOperator");
-arithmeticButtons.forEach(b => b.style.backgroundColor = "rgb(52, 58, 64)");
-
-const clearButton = calculatorButtonsDiv.querySelector("button.clear");
-clearButton.style.backgroundColor = "rgb(52, 58, 64)";
-
-const equalsButton = calculatorButtonsDiv.querySelector("button.evaluationOperator");
-equalsButton.style.backgroundColor = "rgb(52, 58, 64)";
 
 // document.querySelector("#calculator-div").style.height = "50vh";
 // document.querySelector("#calculator-div").style.width = "20vw";
@@ -148,7 +144,6 @@ function numberPressEventListener(event) {
 }
 
 function arithmeticEventListener(event) {
-
     if (operation.LVal === undefined) {
         alert("Hmm, that won't work.\nYou can't perform an arithmetic operation on a single operand!");
         return; // Don't append to screen.
@@ -160,39 +155,44 @@ function arithmeticEventListener(event) {
     }
 
     if (operation.LVal !== undefined && operation.RVal !== undefined && operation.operator !== undefined){
-        calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
-        operation.result = Number(calculatorScreenTxt.textContent);
-        // operation.LVal = undefined;
-        // operation.RVal = undefined;
+        if (operation.RVal === 0 && operation.operator === "/") {
+            alert("Seriously, are you trying to break my calculator?\nYou cannot divide by 0!");
+            clearButtonEventListener();
+        } else {
+            calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
+            operation.result = Number(calculatorScreenTxt.textContent);
+        }
+
+        if (operation.result !== undefined) {
+            appendTextToPanel(event.target.textContent);
+            operation.operator = event.target.textContent;
+
+            operation.LVal = operation.result;
+            operation.RVal = undefined;
+            operation.result = undefined;
+        }
     }
 }
 
-// TODO: Update
 function evaluationEventListener() {
-    if (operation.LVal && operation.RVal && operation.operator) {
-        if (isEvaluationEventListenerEnabled) {
-            if (operation.RVal === "0" && operation.operator === "/")
-                alert("Seriously, are you trying to break my calculator?\nYou cannot divide by 0!");
-            else {
-                isEvaluationEventListenerEnabled = false;
-                calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
-                operation.result = Number(calculatorScreenTxt.textContent);
-            }
-        } else
-            alert("Oops!\nArithmetic operation already in progress!");
+    if (operation.LVal !== undefined && operation.RVal !== undefined && operation.operator !== undefined) {
+        if (operation.RVal === 0 && operation.operator === "/") {
+            alert("Seriously, are you trying to break my calculator?\nYou cannot divide by 0!");
+            clearButtonEventListener();
+        }
+        else {
+            calculatorScreenTxt.textContent = operate(operation.LVal, operation.operator, operation.RVal);
+            operation.result = Number(calculatorScreenTxt.textContent);
+        }
     } else
-        alert("Oops!\nThe supplied calculation cannot be performed; invalid syntax.");
+        alert("Oops!\nThe supplied calculation cannot be performed. You seem to be lacking one or two operands.");
 }
 
 function clearButtonEventListener() {
     // Reset vars, clear calc screen
-    isArithmeticEventListenerEnabled = true;
-    isEvaluationEventListenerEnabled = true;
-
     operation.LVal = undefined;
     operation.RVal = undefined;
     operation.result = undefined;
     operation.operator = undefined;
-
     calculatorScreenTxt.textContent = "Calculation results will appear here.";
 }
